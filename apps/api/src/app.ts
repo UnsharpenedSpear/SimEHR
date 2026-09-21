@@ -27,6 +27,9 @@ import { documentRoutes } from './modules/documents/document.routes.js';
 import { procedureRoutes } from './modules/procedures/procedure.routes.js';
 import { orderRoutes } from './modules/orders/order.routes.js';
 import { prescriptionRoutes } from './modules/prescriptions/prescription.routes.js';
+import { departmentRoutes } from './modules/departments/department.routes.js';
+import { dispatchRoutes } from './modules/dispatch/dispatch.routes.js';
+import { diagnosticRoutes } from './modules/diagnostics/diagnostic.routes.js';
 
 export function createApp(): Express {
   const app = express();
@@ -133,6 +136,10 @@ export function createApp(): Express {
   app.use(`${env.API_PREFIX}/orders`, orderRoutes);
   app.use(`${env.API_PREFIX}/patients/:patientId/prescriptions`, prescriptionRoutes);
   app.use(`${env.API_PREFIX}/prescriptions`, prescriptionRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/diagnostics`, diagnosticRoutes);
+  app.use(`${env.API_PREFIX}/diagnostics`, diagnosticRoutes);
+  app.use(`${env.API_PREFIX}/departments`, departmentRoutes);
+  app.use(`${env.API_PREFIX}/dispatch`, dispatchRoutes);
   app.use(`${env.API_PREFIX}/saved-searches`, savedSearchRoutes);
 
   // Central Error Handler (RFC 7807)
