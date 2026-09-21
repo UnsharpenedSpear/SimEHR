@@ -17,6 +17,13 @@ import { roleRoutes } from './modules/roles/role.routes.js';
 import { auditRoutes } from './modules/audit/audit.routes.js';
 import { patientRoutes } from './modules/patients/patient.routes.js';
 import { savedSearchRoutes } from './modules/saved-searches/savedSearch.routes.js';
+import { encounterRoutes } from './modules/encounters/encounter.routes.js';
+import { clinicalNoteRoutes } from './modules/clinical-notes/clinicalNote.routes.js';
+import { vitalsRoutes } from './modules/vitals/vitals.routes.js';
+import { problemRoutes } from './modules/problems/problem.routes.js';
+import { allergyRoutes } from './modules/allergies/allergy.routes.js';
+import { immunizationRoutes } from './modules/immunizations/immunization.routes.js';
+import { documentRoutes } from './modules/documents/document.routes.js';
 
 export function createApp(): Express {
   const app = express();
@@ -107,6 +114,16 @@ export function createApp(): Express {
   app.use(`${env.API_PREFIX}/admin/roles`, roleRoutes);
   app.use(`${env.API_PREFIX}/audit`, auditRoutes);
   app.use(`${env.API_PREFIX}/patients`, patientRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/encounters`, encounterRoutes);
+  app.use(`${env.API_PREFIX}/encounters`, encounterRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/notes`, clinicalNoteRoutes);
+  app.use(`${env.API_PREFIX}/notes`, clinicalNoteRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/vitals`, vitalsRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/problems`, problemRoutes);
+  app.use(`${env.API_PREFIX}/problems`, problemRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/allergies`, allergyRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/immunizations`, immunizationRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/documents`, documentRoutes);
   app.use(`${env.API_PREFIX}/saved-searches`, savedSearchRoutes);
 
   // Central Error Handler (RFC 7807)

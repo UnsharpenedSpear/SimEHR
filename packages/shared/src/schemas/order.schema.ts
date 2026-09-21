@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { ORDER_PRIORITIES, ORDER_STATUSES, ORDER_TYPES } from '../constants/status.js';
 
 export const CreateOrderSchema = z.object({
-  patientId: z.string().min(1),
-  encounterId: z.string().min(1),
+  patientId: z.string().optional(),
+  encounterId: z.string().optional(),
   type: z.enum([
     ORDER_TYPES.LAB,
     ORDER_TYPES.IMAGING,
@@ -29,8 +29,8 @@ export const SignOrderSchema = z.object({
 export type SignOrderInput = z.infer<typeof SignOrderSchema>;
 
 export const CreatePrescriptionSchema = z.object({
-  patientId: z.string().min(1),
-  encounterId: z.string().min(1),
+  patientId: z.string().optional(),
+  encounterId: z.string().optional(),
   orderId: z.string().optional(),
   drug: z.object({
     code: z.string().min(1), // RxNorm

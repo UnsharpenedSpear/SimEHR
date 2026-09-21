@@ -24,8 +24,8 @@ export type CreateProcedureCatalogInput = z.infer<typeof CreateProcedureCatalogS
 
 // Base Procedure schema
 export const BaseProcedureSchema = z.object({
-  patientId: z.string().min(1),
-  encounterId: z.string().min(1),
+  patientId: z.string().optional(),
+  encounterId: z.string().optional(),
   catalogId: z.string().optional(),
   code: z.string().min(1),
   codeSystem: z.string().default('CPT'),

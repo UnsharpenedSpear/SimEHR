@@ -13,6 +13,7 @@ import { PatientRegistrationPage } from '../features/patients/PatientRegistratio
 import { UsersManagementPage } from '../features/admin/UsersManagementPage.js';
 import { RolesMatrixPage } from '../features/admin/RolesMatrixPage.js';
 import { AuditLogViewerPage } from '../features/audit/AuditLogViewerPage.js';
+import { PatientChartPage } from '../features/chart/PatientChartPage.js';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,7 +59,7 @@ export const App: React.FC = () => {
               <Route index element={<DashboardPage />} />
               <Route path="patients" element={<PatientListPage />} />
               <Route path="patients/new" element={<PatientRegistrationPage />} />
-              <Route path="patients/:id" element={<DashboardPage />} />
+              <Route path="patients/:id" element={<PatientChartPage />} />
               <Route path="dispatch/*" element={<DashboardPage />} />
               <Route path="lab/*" element={<DashboardPage />} />
               <Route path="pharmacy/*" element={<DashboardPage />} />

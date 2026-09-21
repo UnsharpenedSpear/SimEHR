@@ -15,7 +15,7 @@ export const CodedDiagnosisSchema = z.object({
 });
 
 export const CreateEncounterSchema = z.object({
-  patientId: z.string().min(1),
+  patientId: z.string().optional(),
   facilityId: z.string().min(1),
   type: z.enum([
     ENCOUNTER_TYPES.OUTPATIENT,
@@ -24,7 +24,7 @@ export const CreateEncounterSchema = z.object({
     ENCOUNTER_TYPES.TELEHEALTH,
   ]),
   departmentId: z.string().min(1),
-  attendingId: z.string().min(1),
+  attendingId: z.string().optional(),
   reasonForVisit: z.string().min(1),
   diagnoses: z.array(CodedDiagnosisSchema).default([]),
   start: z.string().datetime().optional(),
@@ -48,7 +48,7 @@ export const UpdateEncounterDispositionSchema = z.object({
 export type UpdateEncounterDispositionInput = z.infer<typeof UpdateEncounterDispositionSchema>;
 
 export const CreateVitalsSchema = z.object({
-  patientId: z.string().min(1),
+  patientId: z.string().optional(),
   encounterId: z.string().optional(),
   recordedAt: z.string().datetime().default(() => new Date().toISOString()),
   bp: z
@@ -69,7 +69,7 @@ export const CreateVitalsSchema = z.object({
 export type CreateVitalsInput = z.infer<typeof CreateVitalsSchema>;
 
 export const CreateClinicalNoteSchema = z.object({
-  patientId: z.string().min(1),
+  patientId: z.string().optional(),
   encounterId: z.string().min(1),
   template: z.enum([
     CLINICAL_NOTE_TEMPLATES.SOAP,
@@ -80,18 +80,19 @@ export const CreateClinicalNoteSchema = z.object({
     CLINICAL_NOTE_TEMPLATES.FREE_TEXT,
   ]),
   title: z.string().min(1),
-  sections: z.record(z.string()), // e.g. { subjective: "...", objective: "...", assessment: "...", plan: "..." }
+  content: z.record(z.any()).or(z.string()).optional(),
+  sections: z.record(z.any()).optional(),
 });
 export type CreateClinicalNoteInput = z.infer<typeof CreateClinicalNoteSchema>;
 
 export const AmendClinicalNoteSchema = z.object({
   amendmentReason: z.string().min(5, 'Amendment reason is required'),
-  content: z.string().min(1, 'Amended content is required'),
+  content: z.record(z.string()).or(z.string()),
 });
 export type AmendClinicalNoteInput = z.infer<typeof AmendClinicalNoteSchema>;
 
 export const CreateProblemSchema = z.object({
-  patientId: z.string().min(1),
+  patientId: z.string().optional(),
   icd10: z.string().min(1),
   description: z.string().min(1),
   status: z.enum(['ACTIVE', 'RESOLVED', 'REMISSION', 'INACTIVE']).default('ACTIVE'),
@@ -102,7 +103,7 @@ export const CreateProblemSchema = z.object({
 export type CreateProblemInput = z.infer<typeof CreateProblemSchema>;
 
 export const CreateAllergySchema = z.object({
-  patientId: z.string().min(1),
+  patientId: z.string().optional(),
   substance: z.string().min(1), // e.g., Penicillin, Peanuts, Latex
   substanceCode: z.string().optional(),
   category: z.enum(['MEDICATION', 'FOOD', 'ENVIRONMENTAL', 'BIOLOGICAL', 'OTHER']).default('MEDICATION'),
@@ -115,7 +116,7 @@ export const CreateAllergySchema = z.object({
 export type CreateAllergyInput = z.infer<typeof CreateAllergySchema>;
 
 export const CreateImmunizationSchema = z.object({
-  patientId: z.string().min(1),
+  patientId: z.string().optional(),
   cvx: z.string().min(1),
   vaccineName: z.string().min(1),
   lot: z.string().min(1),
