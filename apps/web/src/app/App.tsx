@@ -15,6 +15,9 @@ import { RolesMatrixPage } from '../features/admin/RolesMatrixPage.js';
 import { AuditLogViewerPage } from '../features/audit/AuditLogViewerPage.js';
 import { PatientChartPage } from '../features/chart/PatientChartPage.js';
 import { DispatchBoardPage } from '../features/dispatch/DispatchBoardPage.js';
+import { AppointmentsPage } from '../features/appointments/AppointmentsPage.js';
+import { BillingPage } from '../features/billing/BillingPage.js';
+import { ReportsPage } from '../features/reports/ReportsPage.js';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,9 +68,9 @@ export const App: React.FC = () => {
               <Route path="lab/*" element={<DispatchBoardPage />} />
               <Route path="pharmacy/*" element={<DispatchBoardPage />} />
               <Route path="radiology/*" element={<DispatchBoardPage />} />
-              <Route path="appointments/*" element={<DashboardPage />} />
-              <Route path="billing/*" element={<DashboardPage />} />
-              <Route path="reports/*" element={<DashboardPage />} />
+              <Route path="appointments/*" element={<AppointmentsPage />} />
+              <Route path="billing/*" element={<BillingPage />} />
+              <Route path="reports/*" element={<ReportsPage />} />
               <Route path="audit" element={<AuditLogViewerPage />} />
               <Route path="admin" element={<UsersManagementPage />} />
               <Route path="admin/roles" element={<RolesMatrixPage />} />
