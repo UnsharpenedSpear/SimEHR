@@ -55,7 +55,11 @@ export function decryptField(cipherPayload: string): string {
  */
 export function createBlindIndex(value: string): string {
   if (!value) return '';
-  const normalized = value.trim().toLowerCase().replace(/[\s\-\(\)\.]/g, '');
+  let normalized = value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  // Normalize 11-digit phone starting with 1 to 10-digit
+  if (normalized.length === 11 && normalized.startsWith('1')) {
+    normalized = normalized.substring(1);
+  }
   return crypto.createHmac('sha256', env.BLIND_INDEX_SALT).update(normalized).digest('hex');
 }
 

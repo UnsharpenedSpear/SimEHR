@@ -15,6 +15,8 @@ import { authRoutes } from './modules/auth/auth.routes.js';
 import { userRoutes } from './modules/users/user.routes.js';
 import { roleRoutes } from './modules/roles/role.routes.js';
 import { auditRoutes } from './modules/audit/audit.routes.js';
+import { patientRoutes } from './modules/patients/patient.routes.js';
+import { savedSearchRoutes } from './modules/saved-searches/savedSearch.routes.js';
 
 export function createApp(): Express {
   const app = express();
@@ -104,6 +106,8 @@ export function createApp(): Express {
   app.use(`${env.API_PREFIX}/admin/users`, userRoutes);
   app.use(`${env.API_PREFIX}/admin/roles`, roleRoutes);
   app.use(`${env.API_PREFIX}/audit`, auditRoutes);
+  app.use(`${env.API_PREFIX}/patients`, patientRoutes);
+  app.use(`${env.API_PREFIX}/saved-searches`, savedSearchRoutes);
 
   // Central Error Handler (RFC 7807)
   app.use(errorHandler);

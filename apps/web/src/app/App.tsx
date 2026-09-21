@@ -8,6 +8,11 @@ import { useAuthStore } from '../stores/authStore.js';
 import { AppShell } from '../components/layout/AppShell.js';
 import { DashboardPage } from '../features/dashboard/DashboardPage.js';
 import { LoginPage } from '../features/auth/LoginPage.js';
+import { PatientListPage } from '../features/patients/PatientListPage.js';
+import { PatientRegistrationPage } from '../features/patients/PatientRegistrationPage.js';
+import { UsersManagementPage } from '../features/admin/UsersManagementPage.js';
+import { RolesMatrixPage } from '../features/admin/RolesMatrixPage.js';
+import { AuditLogViewerPage } from '../features/audit/AuditLogViewerPage.js';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,7 +56,9 @@ export const App: React.FC = () => {
               }
             >
               <Route index element={<DashboardPage />} />
-              <Route path="patients/*" element={<DashboardPage />} />
+              <Route path="patients" element={<PatientListPage />} />
+              <Route path="patients/new" element={<PatientRegistrationPage />} />
+              <Route path="patients/:id" element={<DashboardPage />} />
               <Route path="dispatch/*" element={<DashboardPage />} />
               <Route path="lab/*" element={<DashboardPage />} />
               <Route path="pharmacy/*" element={<DashboardPage />} />
@@ -59,8 +66,9 @@ export const App: React.FC = () => {
               <Route path="appointments/*" element={<DashboardPage />} />
               <Route path="billing/*" element={<DashboardPage />} />
               <Route path="reports/*" element={<DashboardPage />} />
-              <Route path="audit/*" element={<DashboardPage />} />
-              <Route path="admin/*" element={<DashboardPage />} />
+              <Route path="audit" element={<AuditLogViewerPage />} />
+              <Route path="admin" element={<UsersManagementPage />} />
+              <Route path="admin/roles" element={<RolesMatrixPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
