@@ -1,0 +1,112 @@
+import express, { Express, Request, Response } from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import mongoSanitize from 'express-mongo-sanitize';
+import hpp from 'hpp';
+import pinoHttp from 'pino-http';
+import crypto from 'crypto';
+import mongoose from 'mongoose';
+import { env } from './config/env.js';
+import { logger } from './config/logger.js';
+import { errorHandler } from './middleware/error.middleware.js';
+import { standardRateLimiter } from './middleware/rateLimiter.middleware.js';
+
+export function createApp(): Express {
+  const app = express();
+
+  // Trust proxy for secure cookies / rate-limiting behind reverse proxy
+  app.set('trust proxy', 1);
+
+  // Security Headers
+  app.use(
+    helmet({
+      contentSecurityPolicy: env.NODE_ENV === 'production' ? undefined : false,
+      crossOriginEmbedderPolicy: false,
+    })
+  );
+
+  // CORS
+  app.use(
+    cors({
+      origin: [env.CORS_ORIGIN, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'If-Match', 'Idempotency-Key'],
+      exposedHeaders: ['ETag', 'X-Correlation-Id'],
+    })
+  );
+
+  // Rate Limiting
+  app.use(standardRateLimiter);
+
+  // Request Correlation ID & Structured Logging
+  app.use((req: Request, res: Response, next) => {
+    const correlationId = (req.headers['x-correlation-id'] as string) || crypto.randomUUID();
+    req.headers['x-correlation-id'] = correlationId;
+    res.setHeader('X-Correlation-Id', correlationId);
+    next();
+  });
+
+  if (env.NODE_ENV !== 'test') {
+    app.use(
+      pinoHttp({
+        logger,
+        genReqId: (req) => (req.headers['x-correlation-id'] as string) || crypto.randomUUID(),
+        customLogLevel: (req, res, err) => {
+          if (res.statusCode >= 500 || err) return 'error';
+          if (res.statusCode >= 400) return 'warn';
+          return 'info';
+        },
+      })
+    );
+  }
+
+  // Parsers & Sanitizers
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(cookieParser());
+  app.use(mongoSanitize({ replaceWith: '_' }));
+  app.use(hpp());
+
+  // Health / Liveness & Readiness Probes
+  app.get('/health/live', (req: Request, res: Response) => {
+    res.status(200).json({
+      status: 'UP',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  app.get('/health/ready', (req: Request, res: Response) => {
+    const isDbConnected = mongoose.connection.readyState === 1;
+    if (isDbConnected) {
+      res.status(200).json({
+        status: 'READY',
+        database: 'CONNECTED',
+        timestamp: new Date().toISOString(),
+      });
+    } else {
+      res.status(503).json({
+        status: 'UNAVAILABLE',
+        database: 'DISCONNECTED',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  // Root welcome
+  app.get('/', (req: Request, res: Response) => {
+    res.json({
+      name: 'Simulated EHR API',
+      version: '1.0.0',
+      docs: '/api/docs',
+      health: '/health/live',
+    });
+  });
+
+  // Central Error Handler (RFC 7807)
+  app.use(errorHandler);
+
+  return app;
+}

@@ -1,0 +1,83 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: ehr-mongo
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    healthcheck:
+      test: mongosh --port 27017 --eval "try { rs.status().ok } catch(e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    container_name: ehr-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: ehr-api
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/ehr?replicaSet=rs0
+      - REDIS_URL=redis://redis:6379
+      - JWT_ACCESS_SECRET=c8e9fa014890b345ef819a6d71c2b530d9472e38c9284fa9e2a1b4c73d9e80f1
+      - JWT_REFRESH_SECRET=7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a
+      - FIELD_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      - BLIND_INDEX_SALT=9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba
+      - CORS_ORIGIN=http://localhost:3000
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: ehr-web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  mongo-express:
+    image: mongo-express:1.0.2-20
+    container_name: ehr-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_BASICAUTH=false
+    depends_on:
+      mongo:
+        condition: service_healthy
+    profiles:
+      - dev
+
+volumes:
+  mongo_data:
+  mongo_config:
+  redis_data:

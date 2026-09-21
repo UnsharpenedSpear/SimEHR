@@ -1,0 +1,27 @@
+{
+  "name": "ehr-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-Grade Multi-Role MERN Electronic Health Record (EHR) System",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"API,WEB\" -c \"blue,green\" \"npm run dev --workspace=@ehr/api\" \"npm run dev --workspace=@ehr/web\"",
+    "build": "npm run build --workspace=@ehr/shared && npm run build --workspace=@ehr/api && npm run build --workspace=@ehr/web",
+    "test": "npm run test --workspaces --if-present",
+    "test:coverage": "npm run test:coverage --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "seed": "npm run seed --workspace=@ehr/api",
+    "clean": "rimraf node_modules packages/*/node_modules apps/*/node_modules packages/*/dist apps/*/dist"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

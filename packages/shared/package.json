@@ -1,0 +1,20 @@
+{
+  "name": "@ehr/shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared Zod schemas, types, enums, and RBAC permission constants for EHR",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.3"
+  }
+}
