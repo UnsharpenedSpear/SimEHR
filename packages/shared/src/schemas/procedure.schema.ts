@@ -48,7 +48,7 @@ export const BaseProcedureSchema = z.object({
       PROCEDURE_STATUSES.ENTERED_IN_ERROR,
     ])
     .default(PROCEDURE_STATUSES.PLANNED),
-  performedBy: z.array(z.string()).min(1, 'At least one performer is required'),
+  performedBy: z.array(z.string()).optional(),
   scheduledAt: z.string().datetime().optional(),
   performedAt: z.string().datetime().optional(),
   notes: z.string().optional(),
@@ -125,5 +125,5 @@ export const CreateProcedureSchema = BaseProcedureSchema.extend({
   labDetails: LabDetailSchema.optional(),
   immunizationDetails: ImmunizationDetailSchema.optional(),
   rehabDetails: RehabDetailSchema.optional(),
-});
+}).passthrough();
 export type CreateProcedureInput = z.infer<typeof CreateProcedureSchema>;

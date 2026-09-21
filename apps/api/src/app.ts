@@ -24,6 +24,9 @@ import { problemRoutes } from './modules/problems/problem.routes.js';
 import { allergyRoutes } from './modules/allergies/allergy.routes.js';
 import { immunizationRoutes } from './modules/immunizations/immunization.routes.js';
 import { documentRoutes } from './modules/documents/document.routes.js';
+import { procedureRoutes } from './modules/procedures/procedure.routes.js';
+import { orderRoutes } from './modules/orders/order.routes.js';
+import { prescriptionRoutes } from './modules/prescriptions/prescription.routes.js';
 
 export function createApp(): Express {
   const app = express();
@@ -124,6 +127,12 @@ export function createApp(): Express {
   app.use(`${env.API_PREFIX}/patients/:patientId/allergies`, allergyRoutes);
   app.use(`${env.API_PREFIX}/patients/:patientId/immunizations`, immunizationRoutes);
   app.use(`${env.API_PREFIX}/patients/:patientId/documents`, documentRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/procedures`, procedureRoutes);
+  app.use(`${env.API_PREFIX}/procedures`, procedureRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/orders`, orderRoutes);
+  app.use(`${env.API_PREFIX}/orders`, orderRoutes);
+  app.use(`${env.API_PREFIX}/patients/:patientId/prescriptions`, prescriptionRoutes);
+  app.use(`${env.API_PREFIX}/prescriptions`, prescriptionRoutes);
   app.use(`${env.API_PREFIX}/saved-searches`, savedSearchRoutes);
 
   // Central Error Handler (RFC 7807)
