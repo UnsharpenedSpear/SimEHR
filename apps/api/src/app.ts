@@ -11,6 +11,10 @@ import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { standardRateLimiter } from './middleware/rateLimiter.middleware.js';
+import { authRoutes } from './modules/auth/auth.routes.js';
+import { userRoutes } from './modules/users/user.routes.js';
+import { roleRoutes } from './modules/roles/role.routes.js';
+import { auditRoutes } from './modules/audit/audit.routes.js';
 
 export function createApp(): Express {
   const app = express();
@@ -95,15 +99,11 @@ export function createApp(): Express {
     }
   });
 
-  // Root welcome
-  app.get('/', (req: Request, res: Response) => {
-    res.json({
-      name: 'Simulated EHR API',
-      version: '1.0.0',
-      docs: '/api/docs',
-      health: '/health/live',
-    });
-  });
+  // Mount API v1 Routes
+  app.use(`${env.API_PREFIX}/auth`, authRoutes);
+  app.use(`${env.API_PREFIX}/admin/users`, userRoutes);
+  app.use(`${env.API_PREFIX}/admin/roles`, roleRoutes);
+  app.use(`${env.API_PREFIX}/audit`, auditRoutes);
 
   // Central Error Handler (RFC 7807)
   app.use(errorHandler);

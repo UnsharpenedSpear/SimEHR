@@ -67,7 +67,8 @@ export function errorHandler(
 ): void {
   const correlationId = (req.headers['x-correlation-id'] as string) || (req.headers['x-request-id'] as string) || 'unknown';
 
-  if (err instanceof ZodError) {
+  if (err instanceof ZodError || err.name === 'ZodError') {
+    const issues = (err as ZodError).issues || (err as ZodError).errors || [];
     res.status(422).json({
       type: 'https://tools.ietf.org/html/rfc7807#section-3.1',
       title: 'Validation Error',
@@ -76,7 +77,7 @@ export function errorHandler(
       detail: 'The payload provided failed schema validation.',
       instance: req.originalUrl,
       correlationId,
-      errors: err.errors.map((e) => ({
+      errors: issues.map((e) => ({
         field: e.path.join('.'),
         message: e.message,
         code: e.code,

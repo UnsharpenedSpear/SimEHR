@@ -34,7 +34,7 @@ export const CreateUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(12),
   name: z.object({
-    given: z.string().min(1),
+    given: z.array(z.string()).min(1).or(z.string().min(1).transform((s) => [s])),
     family: z.string().min(1),
     prefix: z.string().optional(),
   }),
