@@ -25,7 +25,7 @@ router.post('/', authorize(PERMISSIONS.PATIENT_CREATE), validateBody(CreatePatie
 router.get('/:id', authorize(PERMISSIONS.PATIENT_READ), PatientController.getPatientById);
 router.get('/:id/chart-summary', authorize(PERMISSIONS.PATIENT_READ), async (req, res, next) => {
   try {
-    const summary = await getPatientChartSummary(req.params.id);
+    const summary = await getPatientChartSummary(req.params.id as string);
     res.status(200).json({ status: 'SUCCESS', data: summary });
   } catch (err) {
     next(err);
@@ -33,7 +33,7 @@ router.get('/:id/chart-summary', authorize(PERMISSIONS.PATIENT_READ), async (req
 });
 router.get('/:id/timeline', authorize(PERMISSIONS.PATIENT_READ), async (req, res, next) => {
   try {
-    const timeline = await getPatientTimeline(req.params.id);
+    const timeline = await getPatientTimeline(req.params.id as string);
     res.status(200).json({ status: 'SUCCESS', data: timeline });
   } catch (err) {
     next(err);

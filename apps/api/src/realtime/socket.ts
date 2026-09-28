@@ -30,7 +30,7 @@ export function initSocketServer(httpServer: HttpServer): SocketIOServer {
         return next(new Error('Authentication token required'));
       }
 
-      const decoded = jwt.verify(token, env.JWT_SECRET) as SocketUser;
+      const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET) as SocketUser;
       socket.data.user = decoded;
       next();
     } catch (err) {

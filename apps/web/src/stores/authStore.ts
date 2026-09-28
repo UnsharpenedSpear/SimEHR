@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface AuthUser {
   id: string;
@@ -93,6 +93,17 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'ehr-auth-storage',
+      storage: createJSONStorage(() => {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          return window.localStorage;
+        }
+        const memoryStorage: Record<string, string> = {};
+        return {
+          getItem: (key: string) => memoryStorage[key] ?? null,
+          setItem: (key: string, val: string) => { memoryStorage[key] = val; },
+          removeItem: (key: string) => { delete memoryStorage[key]; },
+        };
+      }),
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )

@@ -10,10 +10,10 @@ const router = Router({ mergeParams: true });
 router.use(authenticate);
 
 // Lab Results
-router.get('/labs', authorize(PERMISSIONS.LAB_RESULTS_VIEW), DiagnosticController.listLabResultsByPatient);
+router.get('/labs', authorize(PERMISSIONS.DISPATCH_READ), DiagnosticController.listLabResultsByPatient);
 router.post(
   '/labs',
-  authorize(PERMISSIONS.LAB_RESULTS_ENTER),
+  authorize(PERMISSIONS.LAB_RESULT_ENTRY),
   validateBody(CreateLabResultSchema),
   DiagnosticController.createLabResult
 );
@@ -21,17 +21,17 @@ router.post(
 // Imaging Reports
 router.get(
   '/imaging',
-  authorize(PERMISSIONS.RADIOLOGY_REPORTS_VIEW),
+  authorize(PERMISSIONS.DISPATCH_READ),
   DiagnosticController.listImagingReportsByPatient
 );
 router.get(
   '/imaging/:id',
-  authorize(PERMISSIONS.RADIOLOGY_REPORTS_VIEW),
+  authorize(PERMISSIONS.DISPATCH_READ),
   DiagnosticController.getImagingReportById
 );
 router.post(
   '/imaging',
-  authorize(PERMISSIONS.RADIOLOGY_REPORTS_CREATE),
+  authorize(PERMISSIONS.IMAGING_REPORT_WRITE),
   validateBody(CreateImagingReportSchema),
   DiagnosticController.createImagingReport
 );

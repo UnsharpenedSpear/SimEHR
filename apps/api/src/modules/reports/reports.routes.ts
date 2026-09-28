@@ -9,7 +9,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/census', authorize(PERMISSIONS.ENCOUNTER_READ), ReportsController.getCensusReport);
-router.get('/dispatch-sla', authorize(PERMISSIONS.DISPATCH_VIEW), ReportsController.getDispatchSlaReport);
-router.get('/financial', authorize(PERMISSIONS.BILLING_VIEW), ReportsController.getFinancialReport);
+router.get('/dispatch-sla', authorize(PERMISSIONS.REPORT_VIEW), ReportsController.getDispatchSlaReport);
+router.get('/financial', authorize(PERMISSIONS.REPORT_VIEW), ReportsController.getFinancialReport);
 
 export const reportRoutes = router;

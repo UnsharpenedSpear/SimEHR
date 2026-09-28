@@ -9,15 +9,15 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/', authorize(PERMISSIONS.APPOINTMENT_VIEW), AppointmentController.list);
-router.get('/:id', authorize(PERMISSIONS.APPOINTMENT_VIEW), AppointmentController.getById);
-router.post('/', authorize(PERMISSIONS.APPOINTMENT_CREATE), validateBody(CreateAppointmentSchema), AppointmentController.create);
+router.get('/', authorize(PERMISSIONS.APPOINTMENT_READ), AppointmentController.list);
+router.get('/:id', authorize(PERMISSIONS.APPOINTMENT_READ), AppointmentController.getById);
+router.post('/', authorize(PERMISSIONS.APPOINTMENT_MANAGE), validateBody(CreateAppointmentSchema), AppointmentController.create);
 router.patch(
   '/:id/status',
-  authorize(PERMISSIONS.APPOINTMENT_UPDATE),
+  authorize(PERMISSIONS.APPOINTMENT_MANAGE),
   validateBody(UpdateAppointmentStatusSchema),
   AppointmentController.updateStatus
 );
-router.post('/:id/check-in', authorize(PERMISSIONS.APPOINTMENT_CHECKIN), AppointmentController.checkIn);
+router.post('/:id/check-in', authorize(PERMISSIONS.APPOINTMENT_MANAGE), AppointmentController.checkIn);
 
 export const appointmentRoutes = router;

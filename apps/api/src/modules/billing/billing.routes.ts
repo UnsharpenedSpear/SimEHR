@@ -9,12 +9,12 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/invoices', authorize(PERMISSIONS.BILLING_VIEW), BillingController.list);
-router.get('/invoices/:id', authorize(PERMISSIONS.BILLING_VIEW), BillingController.getById);
-router.post('/invoices', authorize(PERMISSIONS.BILLING_CREATE), validateBody(CreateInvoiceSchema), BillingController.createInvoice);
+router.get('/invoices', authorize(PERMISSIONS.BILLING_READ), BillingController.list);
+router.get('/invoices/:id', authorize(PERMISSIONS.BILLING_READ), BillingController.getById);
+router.post('/invoices', authorize(PERMISSIONS.BILLING_MANAGE), validateBody(CreateInvoiceSchema), BillingController.createInvoice);
 router.post(
   '/invoices/:id/payments',
-  authorize(PERMISSIONS.BILLING_PAYMENT_PROCESS),
+  authorize(PERMISSIONS.BILLING_MANAGE),
   validateBody(RecordPaymentSchema),
   BillingController.recordPayment
 );

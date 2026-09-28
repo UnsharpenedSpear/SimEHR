@@ -72,17 +72,16 @@ export function createApp(): Express {
   });
 
   if (env.NODE_ENV !== 'test') {
-    app.use(
-      pinoHttp({
-        logger,
-        genReqId: (req) => (req.headers['x-correlation-id'] as string) || crypto.randomUUID(),
-        customLogLevel: (req, res, err) => {
-          if (res.statusCode >= 500 || err) return 'error';
-          if (res.statusCode >= 400) return 'warn';
-          return 'info';
-        },
-      })
-    );
+    const httpLogger = (typeof pinoHttp === 'function' ? pinoHttp : (pinoHttp as any).default || (pinoHttp as any).pinoHttp)({
+      logger,
+      genReqId: (req: Request) => (req.headers['x-correlation-id'] as string) || crypto.randomUUID(),
+      customLogLevel: (req: any, res: any, err: any) => {
+        if (res.statusCode >= 500 || err) return 'error';
+        if (res.statusCode >= 400) return 'warn';
+        return 'info';
+      },
+    });
+    app.use(httpLogger);
   }
 
   // Parsers & Sanitizers

@@ -10,6 +10,6 @@ router.use(authenticate);
 
 router.get('/', DepartmentController.list);
 router.get('/:id', DepartmentController.getById);
-router.post('/', authorize(PERMISSIONS.SYSTEM_ADMIN), DepartmentController.create);
+router.post('/', authorize(PERMISSIONS.SYSTEM_CONFIG), DepartmentController.create);
 
 export const departmentRoutes = router;

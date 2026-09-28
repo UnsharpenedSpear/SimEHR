@@ -68,7 +68,7 @@ export class PatientController {
   static async getPatientById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const actor = getActorContext(req);
-      const patient = await PatientService.getById(req.params.id, actor, {
+      const patient = await PatientService.getById(req.params.id as string, actor, {
         ip: req.ip,
         userAgent: req.headers['user-agent'],
         requestId: req.headers['x-correlation-id'] as string,
@@ -86,7 +86,7 @@ export class PatientController {
   static async breakGlass(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const actor = getActorContext(req);
-      const patient = await PatientService.breakGlass(req.params.id, req.body.reason, actor, {
+      const patient = await PatientService.breakGlass(req.params.id as string, req.body.reason, actor, {
         ip: req.ip,
         userAgent: req.headers['user-agent'],
         requestId: req.headers['x-correlation-id'] as string,
@@ -105,7 +105,7 @@ export class PatientController {
     try {
       const actor = getActorContext(req);
       const result = await PatientService.mergePatients(
-        req.params.id,
+        req.params.id as string,
         req.body.targetPatientId,
         req.body.reason,
         actor,

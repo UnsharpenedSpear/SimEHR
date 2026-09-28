@@ -197,7 +197,7 @@ export class FhirController {
           subject: {
             reference: `Patient/${vitals.patientId.toString()}`,
           },
-          effectiveDateTime: vitals.takenAt.toISOString(),
+          effectiveDateTime: vitals.recordedAt.toISOString(),
           component: [
             vitals.bp
               ? {
@@ -321,7 +321,7 @@ export class FhirController {
       const fhirResource = {
         resourceType: 'MedicationRequest',
         id: rx._id.toString(),
-        status: rx.status === 'ACTIVE' ? 'active' : rx.status === 'COMPLETED' ? 'completed' : 'stopped',
+        status: rx.status === 'VERIFIED' ? 'active' : rx.status === 'DISPENSED' ? 'completed' : 'stopped',
         intent: 'order',
         medicationCodeableConcept: {
           coding: [

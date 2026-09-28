@@ -19,7 +19,7 @@ export class VitalsController {
 
   static async getTrends(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const trends = await getVitalsTrend(req.params.patientId);
+      const trends = await getVitalsTrend(req.params.patientId as string);
       res.status(200).json({ status: 'SUCCESS', data: trends });
     } catch (err) {
       next(err);

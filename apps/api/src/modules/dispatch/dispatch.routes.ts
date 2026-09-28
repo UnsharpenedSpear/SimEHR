@@ -14,30 +14,30 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/', authorize(PERMISSIONS.DISPATCH_VIEW), DispatchController.list);
-router.get('/:id', authorize(PERMISSIONS.DISPATCH_VIEW), DispatchController.getById);
+router.get('/', authorize(PERMISSIONS.DISPATCH_READ), DispatchController.list);
+router.get('/:id', authorize(PERMISSIONS.DISPATCH_READ), DispatchController.getById);
 router.post('/', authorize(PERMISSIONS.DISPATCH_CREATE), validateBody(CreateDispatchSchema), DispatchController.create);
 
 router.post(
   '/:id/transition',
-  authorize(PERMISSIONS.DISPATCH_STATUS_UPDATE),
+  authorize(PERMISSIONS.DISPATCH_UPDATE),
   validateBody(TransitionDispatchSchema),
   DispatchController.transitionStatus
 );
 router.patch(
   '/:id/transition',
-  authorize(PERMISSIONS.DISPATCH_STATUS_UPDATE),
+  authorize(PERMISSIONS.DISPATCH_UPDATE),
   validateBody(TransitionDispatchSchema),
   DispatchController.transitionStatus
 );
 
 router.post(
   '/batch-transition',
-  authorize(PERMISSIONS.DISPATCH_STATUS_UPDATE),
+  authorize(PERMISSIONS.DISPATCH_UPDATE),
   validateBody(BatchTransitionDispatchSchema),
   DispatchController.batchTransition
 );
 
-router.get('/:id/routing-slip', authorize(PERMISSIONS.DISPATCH_VIEW), DispatchController.getRoutingSlip);
+router.get('/:id/routing-slip', authorize(PERMISSIONS.DISPATCH_READ), DispatchController.getRoutingSlip);
 
 export const dispatchRoutes = router;
