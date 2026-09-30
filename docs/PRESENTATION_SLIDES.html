@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulated EHR Platform — Academic Presentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00668b;
+      --primary-container: #c4e7ff;
+      --on-primary: #ffffff;
+      --on-primary-container: #001e2c;
+      --secondary: #4f606e;
+      --secondary-container: #d2e4f5;
+      --tertiary: #63597c;
+      --tertiary-container: #e9ddff;
+      --background: #0f141a;
+      --surface: #141b22;
+      --surface-variant: #1e2630;
+      --surface-container-high: #26313f;
+      --outline: #88929e;
+      --on-surface: #e1e7f0;
+      --on-surface-variant: #b0bac8;
+      --accent-cyan: #00d2ff;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-purple: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Top Progress Bar */
+    #progress-bar {
+      height: 5px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-emerald));
+      width: 0%;
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+
+    /* Deck Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 32px;
+      background: rgba(20, 27, 34, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.9rem;
+      color: var(--on-surface-variant);
+      z-index: 90;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(0, 210, 255, 0.12);
+      color: var(--accent-cyan);
+      font-weight: 600;
+      font-size: 0.8rem;
+      border: 1px solid rgba(0, 210, 255, 0.25);
+    }
+
+    /* Slide Container */
+    #deck {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 92%;
+      max-width: 1200px;
+      height: 82vh;
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.96) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+    }
+
+    /* Typography */
+    h1, h2, h3 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 3.2rem;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: 2.2rem;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--on-surface-variant);
+      margin-bottom: 28px;
+      font-weight: 400;
+    }
+
+    p, li {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--on-surface);
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      flex: 1;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      flex: 1;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface-variant);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card.highlight {
+      border-color: rgba(0, 210, 255, 0.4);
+      background: linear-gradient(180deg, rgba(0, 210, 255, 0.06), var(--surface-variant));
+    }
+
+    .card.emerald {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.06), var(--surface-variant));
+    }
+
+    .card.purple {
+      border-color: rgba(168, 85, 247, 0.4);
+      background: linear-gradient(180deg, rgba(168, 85, 247, 0.06), var(--surface-variant));
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Code Blocks */
+    pre, code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.88rem;
+    }
+
+    pre {
+      background: #090d12;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      color: #38bdf8;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 12px;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Controls Footer */
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 32px;
+      background: rgba(20, 27, 34, 0.8);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 90;
+    }
+
+    .btn {
+      background: var(--surface-variant);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--surface-container-high);
+      border-color: var(--accent-cyan);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: transparent;
+    }
+
+    .btn-primary:hover {
+      background: #007fb0;
+    }
+
+    /* Speaker Notes Drawer */
+    #notes-drawer {
+      position: fixed;
+      bottom: 60px;
+      right: 32px;
+      width: 420px;
+      max-height: 280px;
+      background: #090d12;
+      border: 1px solid var(--accent-cyan);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.8);
+      display: none;
+      z-index: 200;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    #notes-drawer.open {
+      display: block;
+    }
+
+    .notes-title {
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Header -->
+  <header>
+    <div><strong>Simulated EHR Platform</strong> · Computer Science & Health Informatics</div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <span class="badge">🔒 HIPAA Compliant</span>
+      <span class="badge" style="color: var(--accent-emerald); border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.1);">✅ 69/69 Tests Pass</span>
+      <span id="slide-indicator">Slide 1 of 18</span>
+    </div>
+  </header>
+
+  <!-- Deck -->
+  <div id="deck">
+
+    <!-- Slide 1: Title -->
+    <div class="slide active">
+      <div style="margin-top: auto; margin-bottom: auto; text-align: center;">
+        <span class="badge" style="margin-bottom: 16px;">Advanced Software Architecture & Healthcare Security</span>
+        <h1>Simulated Electronic Health Record</h1>
+        <p class="subtitle" style="font-size: 1.4rem; max-width: 800px; margin: 0 auto 36px auto;">
+          An Enterprise-Grade, HIPAA-Compliant, Interoperable Clinical Workflow & Decision Support Platform
+        </p>
+
+        <div style="display: flex; justify-content: center; gap: 16px; margin-bottom: 40px;">
+          <div class="stat-box" style="min-width: 140px;">
+            <div class="stat-number">AES-256</div>
+            <div class="stat-label">Field Encryption</div>
+          </div>
+          <div class="stat-box" style="min-width: 140px;">
+            <div class="stat-number">HMAC</div>
+            <div class="stat-label">Blind Indexing</div>
+          </div>
+          <div class="stat-box" style="min-width: 140px;">
+            <div class="stat-number">SHA-256</div>
+            <div class="stat-label">Hash-Chained Audit</div>
+          </div>
+          <div class="stat-box" style="min-width: 140px;">
+            <div class="stat-number">FHIR R4</div>
+            <div class="stat-label">Read Facade</div>
+          </div>
+        </div>
+
+        <p style="color: var(--on-surface-variant); font-size: 0.95rem;">
+          Presented to Professor & Technical Committee · <strong>Use Arrow Keys [← / →] to Navigate</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 2: Problem Statement -->
+    <div class="slide">
+      <h2>The Healthcare IT Security & Workflow Crisis</h2>
+      <p class="subtitle">Why traditional EHR architectures fail in security, data integrity, and usability</p>
+      <div class="grid-3">
+        <div class="card highlight">
+          <div class="card-title">🚨 133M+ Records Breached</div>
+          <p>Traditional EHRs rely only on Transparent Disk Encryption (TDE). If database credentials or memory are compromised, plaintexts are completely exposed.</p>
+        </div>
+        <div class="card emerald">
+          <div class="card-title">🔍 The Encrypted Search Dilemma</div>
+          <p>Standard AES encryption produces randomized ciphertext, making exact patient search impossible without decrypting the entire database into memory.</p>
+        </div>
+        <div class="card purple">
+          <div class="card-title">⚡ Workflow Fragmentation</div>
+          <p>Siloed tools for triage, orders, transport, and pharmacy cause high cognitive fatigue, missed SLAs, and adverse drug events (ADEs).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3: Architecture Overview -->
+    <div class="slide">
+      <h2>High-Level System Architecture</h2>
+      <p class="subtitle">Domain-Driven Monorepo with Multi-Tenant Facility Isolation</p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📦 Package Boundaries</div>
+          <ul>
+            <li><strong><code>@ehr/shared</code>:</strong> Zod validation schemas, 37 permissions, 9 roles, clinical taxonomies (ICD-10, RxNorm, LOINC).</li>
+            <li><strong><code>@ehr/api</code>:</strong> Express 4, Node.js 20, Mongoose 8, Redis 7, Socket.IO real-time channels.</li>
+            <li><strong><code>@ehr/web</code>:</strong> React 19, TypeScript, Google Material Design 3 tokens, Zustand stores.</li>
+          </ul>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">🛡️ Security Gateway Pipeline</div>
+          <p>Every inbound HTTP request passes through a 10-stage middleware pipeline:</p>
+          <pre>1. Pino Correlation Logger
+2. Redis Sliding Window Rate Limiter
+3. CORS & Security Headers
+4. JWT Authn & TOTP Session Validator
+5. RBAC & Facility ABAC Guard (X-Facility-Id)
+6. Idempotency Filter (X-Idempotency-Key)
+7. Zod Runtime Schema Validator
+8. Domain Service Execution
+9. SHA-256 Hash-Chaining Audit Interceptor
+10. RFC 7807 Problem Details Handler</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Cryptography AES-GCM -->
+    <div class="slide">
+      <h2>Field-Level PHI Envelope Encryption</h2>
+      <p class="subtitle">Guaranteed privacy at rest complying with HIPAA § 164.312(a)(2)(iv)</p>
+      <div class="grid-2">
+        <div class="card highlight">
+          <div class="card-title">🔐 AES-256-GCM Mechanism</div>
+          <ul>
+            <li>Direct identifiers (SSN, Name, Email, Phone, Address) encrypted at the application boundary.</li>
+            <li><strong>Unique IV:</strong> 12-byte cryptographically random Nonce generated per field.</li>
+            <li><strong>Integrity:</strong> 16-byte GCM Authentication Tag detects any ciphertext tampering.</li>
+          </ul>
+          <pre style="margin-top: 12px;">// Stored MongoDB Record
+{
+  "mrn": "MRN-MAIN-202609-00042",
+  "ssn": {
+    "ciphertext": "8f3b2a19...",
+    "iv": "d4e5f6a7...",
+    "tag": "1a2b3c4d..."
+  }
+}</pre>
+        </div>
+        <div class="card">
+          <div class="card-title">💡 Why Envelope Encryption?</div>
+          <p>Even if an adversary dumps the raw MongoDB database, steals backup tapes, or accesses replication logs, they obtain only high-entropy random ciphertext.</p>
+          <p style="margin-top: 8px;">Plaintext PHI never resides on unencrypted disk blocks or database logs.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 5: Blind Indexing -->
+    <div class="slide">
+      <h2>Deterministic Blind Indexing (HMAC-SHA256)</h2>
+      <p class="subtitle">Solving the encrypted search paradox: $O(1)$ query speed with zero plaintext leakage</p>
+      <div class="grid-2">
+        <div class="card emerald">
+          <div class="card-title">⚡ How Blind Indexing Works</div>
+          <pre style="color: #34d399;">normalize(input) = lowercase & strip non-alphanumerics
+
+blindIndex = HMAC_SHA256(normalizedText, BLIND_INDEX_SALT)</pre>
+          <p style="margin-top: 12px;">The blind index produces a deterministic 64-character hex hash, stored in a standard MongoDB B-Tree index.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Comparison Table</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Search Method</th>
+                <th>Query Complexity</th>
+                <th>Security Leakage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Scan & Decrypt</td>
+                <td>$O(N)$ (Slow)</td>
+                <td>Memory exposure</td>
+              </tr>
+              <tr>
+                <td>Order-Preserving (OPE)</td>
+                <td>$O(\log N)$</td>
+                <td>Leaks frequency & order</td>
+              </tr>
+              <tr>
+                <td><strong>HMAC Blind Index</strong></td>
+                <td><strong>$O(1)$ (Sub-ms)</strong></td>
+                <td><strong>Zero Plaintext Leakage</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 6: Hash-Chained Audit Trail -->
+    <div class="slide">
+      <h2>Tamper-Evident SHA-256 Hash-Chained Audit Trail</h2>
+      <p class="subtitle">Merkle / Blockchain-style ledger enforcing non-repudiation for HIPAA § 164.312(b)</p>
+      <div class="grid-2">
+        <div class="card highlight">
+          <div class="card-title">🔗 Mathematical Hash Chaining</div>
+          <pre>EntryHash[n] = SHA256(
+  EntryHash[n-1] +
+  Timestamp +
+  ActorID +
+  Action +
+  ResourceID +
+  FacilityID +
+  MetadataDigest
+)</pre>
+          <p style="margin-top: 12px;">If a DBA alters any patient record or deletes an audit log, the downstream hash chain breaks instantly.</p>
+        </div>
+        <div class="card purple">
+          <div class="card-title">🛡️ Automated Chain Verification</div>
+          <p>Endpoint: <code>GET /api/v1/audit/verify</code></p>
+          <ul>
+            <li>Iterates chronologically through the ledger.</li>
+            <li>Recalculates cryptographic digests sequentially.</li>
+            <li>Identifies exact block position of any tampering or corrupt record.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 7: Auth, MFA & Token Family Security -->
+    <div class="slide">
+      <h2>Zero-Trust Authentication & Token Family Security</h2>
+      <p class="subtitle">Argon2id, RFC 6238 TOTP MFA, and Automated Refresh Token Reuse Detection</p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">🔑 Argon2id Password Hashing</div>
+          <p>64 MB memory cost, 3 iterations, 4 threads. Highly resistant to GPU and ASIC brute-force cracking.</p>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">📱 RFC 6238 TOTP MFA</div>
+          <p>6-digit dynamic codes with 30-second time-steps and Base32 secret generation.</p>
+        </div>
+        <div class="card emerald">
+          <div class="card-title">🔄 Token Reuse Breach Detection</div>
+          <p>If an expired or spent refresh token is replayed, the server <strong>instantly revokes the entire token family</strong> and locks active sessions.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 8: RBAC & Break-Glass -->
+    <div class="slide">
+      <h2>9-Role RBAC Matrix & Break-Glass Emergency Access</h2>
+      <p class="subtitle">Granular 37-Permission Matrix with Scoped Facility ABAC</p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">👥 The 9 Clinical Roles</div>
+          <p><code>SUPER_ADMIN</code>, <code>PHYSICIAN</code>, <code>NURSE</code>, <code>RECEPTIONIST</code>, <code>LAB_TECH</code>, <code>RADIOLOGIST</code>, <code>PHARMACIST</code>, <code>BILLING_OFFICER</code>, <code>COMPLIANCE_AUDITOR</code>.</p>
+          <p style="margin-top: 8px;">Multi-tenancy enforced through mandatory <code>X-Facility-Id</code> header.</p>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">🚨 Break-Glass Emergency Protocol</div>
+          <p>In life-threatening emergency situations (e.g. unconscious trauma patient in ER):</p>
+          <ul>
+            <li>Clinician sends <code>X-Break-Glass-Reason: "Trauma ICU"</code>.</li>
+            <li>System overrides ward restrictions immediately.</li>
+            <li>Generates a <strong>high-priority audit event</strong> for mandatory 24-hour supervisor compliance review.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 9: Polymorphic Discriminators & MRN -->
+    <div class="slide">
+      <h2>Domain Modeling: Polymorphic Discriminators</h2>
+      <p class="subtitle">Mongoose 8 Discriminators & Thread-Safe Atomic MRN Counter</p>
+      <div class="grid-2">
+        <div class="card highlight">
+          <div class="card-title">🧬 7 Polymorphic Discriminators</div>
+          <p>Clinical Orders and Procedures inherit from a base schema into 7 distinct schemas:</p>
+          <ul>
+            <li><strong>LabOrder:</strong> Specimen types, test codes, reference intervals.</li>
+            <li><strong>ImagingOrder:</strong> Modality (CT/MRI/X-Ray), contrast flags.</li>
+            <li><strong>NursingOrder, ConsultOrder, DietaryOrder</strong>.</li>
+            <li><strong>MinorProcedure & SurgicalProcedure</strong> (OR/PIN).</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">🔢 Atomic Sequential MRN</div>
+          <p>Format: <code>MRN-{FACILITY}-{YYYYMM}-{00001}</code></p>
+          <p style="margin-top: 8px;">Generated using atomic MongoDB <code>$inc</code> operations on a dedicated Counter collection, preventing race conditions under high concurrency.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 10: Clinical Decision Support (CDS) -->
+    <div class="slide">
+      <h2>Clinical Decision Support (CDS) & Prescribing</h2>
+      <p class="subtitle">Real-Time Interaction Engine Preventing Adverse Drug Events (ADEs)</p>
+      <div class="grid-3">
+        <div class="card highlight">
+          <div class="card-title">💊 Drug-Drug Interactions</div>
+          <p>Cross-checks active patient medication list against contraindicated drug pairs (e.g., Warfarin + NSAIDs).</p>
+        </div>
+        <div class="card emerald">
+          <div class="card-title">⚠️ Drug-Allergy Alerts</div>
+          <p>Compares RxNorm active ingredients against patient allergy records (e.g., Penicillin allergy vs. Amoxicillin order).</p>
+        </div>
+        <div class="card purple">
+          <div class="card-title">🔁 Duplicate Therapy</div>
+          <p>Detects simultaneous overlapping therapeutic classes (e.g., prescribing two ACE inhibitors).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 11: Real-Time Dispatch FSM & SLA -->
+    <div class="slide">
+      <h2>Real-Time Hospital Dispatch & SLA Sweeper</h2>
+      <p class="subtitle">Finite State Machine, Physical QR Codes & WebSocket Alerting</p>
+      <div class="grid-2">
+        <div class="card highlight">
+          <div class="card-title">🔄 Finite State Machine (FSM)</div>
+          <pre>PENDING ➔ ASSIGNED ➔ IN_TRANSIT ➔ ARRIVED ➔ COMPLETED</pre>
+          <ul>
+            <li><strong>QR Code Scanning:</strong> Porters scan patient wristbands and specimen labels to confirm chain of custody.</li>
+            <li><strong>Socket.IO Rooms:</strong> Real-time task dispatching partitioned by department (<code>dept:LAB</code>, <code>dept:RADIOLOGY</code>).</li>
+          </ul>
+        </div>
+        <div class="card emerald">
+          <div class="card-title">⏱️ Background SLA Sweeper</div>
+          <p>Runs every 60 seconds. Evaluates active dispatch tasks against department SLA targets.</p>
+          <p style="margin-top: 8px;">Tasks exceeding SLA trigger instant <code>sla:breached</code> WebSocket broadcasts with visual and audio alerts.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 12: HL7 FHIR R4 Interoperability -->
+    <div class="slide">
+      <h2>HL7 FHIR Release 4 Interoperability Facade</h2>
+      <p class="subtitle">Standardized Healthcare REST Facade (<code>/fhir/r4/*</code>)</p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">🌐 Supported FHIR R4 Resources</div>
+          <ul>
+            <li><code>Patient</code>: Demographics, telecom, identifiers.</li>
+            <li><code>Encounter</code>: Outpatient, Inpatient, Emergency visits.</li>
+            <li><code>Observation</code>: Vital signs, LOINC laboratory panels.</li>
+            <li><code>Condition</code>: Problem list mapped to ICD-10-CM.</li>
+            <li><code>MedicationRequest</code>: Prescriptions with RxNorm codes.</li>
+          </ul>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">📦 Standard Bundle Output</div>
+          <p>Translates internal encrypted MongoDB models into standardized, validated FHIR JSON searchset bundles on the fly.</p>
+          <pre>{
+  "resourceType": "Bundle",
+  "type": "searchset",
+  "total": 1,
+  "entry": [{ "resource": { "resourceType": "Patient", ... } }]
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 13: Frontend Architecture (M3) -->
+    <div class="slide">
+      <h2>Frontend Engineering: Google Material Design 3</h2>
+      <p class="subtitle">Ergonomic, High-Context Clinical UI for Patient Safety</p>
+      <div class="grid-3">
+        <div class="card highlight">
+          <div class="card-title">🎨 M3 Design Tokens</div>
+          <p>Harmonious HSL color palettes, tonal surface containers (0–5), state layers, and responsive typography.</p>
+        </div>
+        <div class="card emerald">
+          <div class="card-title">🏥 Patient Clinical Banner</div>
+          <p>Persistent header showing MRN, Age, Sex, Blood Group, Active Allergies (high-visibility red badges), and DNR status.</p>
+        </div>
+        <div class="card purple">
+          <div class="card-title">⚡ Zustand + Query Cache</div>
+          <p>Lightweight client state with SSR-safe persistence and TanStack Query for real-time background revalidation.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 14: Automated Testing Rigor -->
+    <div class="slide">
+      <h2>Experimental Evaluation & Automated Testing</h2>
+      <p class="subtitle">Zero-Dependency Verification via In-Memory MongoDB Replica Sets</p>
+      <div class="grid-2">
+        <div class="card highlight">
+          <div class="card-title">🧪 69 / 69 Tests Passing</div>
+          <pre>✓ foundation.test.ts             (8 tests)
+✓ auth_rbac_audit.test.ts        (9 tests)
+✓ patients_search.test.ts        (7 tests)
+✓ clinical_chart.test.ts         (3 tests)
+✓ procedures_prescriptions.test.ts (11 tests)
+✓ dispatch_worklists.test.ts     (8 tests)
+✓ scheduling_billing_fhir.test.ts(12 tests)
+✓ authStore.test.ts              (7 tests)
+✓ StatusChip.test.tsx            (4 tests)</pre>
+        </div>
+        <div class="card emerald">
+          <div class="card-title">🌱 Synthetic Clinical Seeder</div>
+          <p>Generates 300+ realistic patient profiles with full encrypted medical histories, 900+ encounters, signed SOAP notes, orders, CDS prescriptions, and valid SHA-256 audit chains.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 15: Live Demo Walkthrough -->
+    <div class="slide">
+      <h2>Live Demonstration Clinical Walkthrough</h2>
+      <p class="subtitle">End-to-End Simulation of Hospital Operations</p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">1. Intake & Triage</div>
+          <p>Register "John Doe" (AES-256-GCM + Blind Index). Nurse logs vitals; high BP triggers outlier alert.</p>
+        </div>
+        <div class="card highlight">
+          <div class="card-title">2. Chart & CDS Rx</div>
+          <p>Physician authors & signs SOAP note. CDS flags Lisinopril contraindication with prompt override rationale.</p>
+        </div>
+        <div class="card emerald">
+          <div class="card-title">3. Dispatch & Audit</div>
+          <p>Porter claims STAT lab transport via QR scan. Compliance auditor runs SHA-256 ledger integrity verification.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 16: System Comparison Matrix -->
+    <div class="slide">
+      <h2>Comparative Analysis with Existing Systems</h2>
+      <p class="subtitle">Simulated EHR vs. Legacy Enterprise & Open-Source Solutions</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Simulated EHR</th>
+            <th>Legacy Enterprise (Epic/Cerner)</th>
+            <th>Open-Source (OpenEMR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>PHI Encryption</strong></td>
+            <td><strong style="color: var(--accent-cyan);">Field-Level AES-256-GCM</strong></td>
+            <td>Transparent Disk (TDE)</td>
+            <td>Disk / Plaintext DB</td>
+          </tr>
+          <tr>
+            <td><strong>Encrypted Search</strong></td>
+            <td><strong style="color: var(--accent-cyan);">HMAC Blind Indexing</strong></td>
+            <td>Plaintext Relational Index</td>
+            <td>Plaintext SQL query</td>
+          </tr>
+          <tr>
+            <td><strong>Audit Integrity</strong></td>
+            <td><strong style="color: var(--accent-cyan);">SHA-256 Hash Chain</strong></td>
+            <td>Relational Audit Tables</td>
+            <td>Standard SQL Logs</td>
+          </tr>
+          <tr>
+            <td><strong>Real-Time Dispatch</strong></td>
+            <td><strong style="color: var(--accent-cyan);">Native WebSockets + FSM</strong></td>
+            <td>Separate 3rd party module</td>
+            <td>Not available</td>
+          </tr>
+          <tr>
+            <td><strong>FHIR R4 Interop</strong></td>
+            <td><strong style="color: var(--accent-cyan);">Native Read Facade</strong></td>
+            <td>Complex Gateway Adapter</td>
+            <td>Basic Module</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Slide 17: Future Work & Research -->
+    <div class="slide">
+      <h2>Future Research & Development Directions</h2>
+      <p class="subtitle">Roadmap for Next-Generation Clinical Capabilities</p>
+      <div class="grid-2">
+        <div class="card highlight">
+          <div class="card-title">🚀 SMART-on-FHIR OAuth2 Launch</div>
+          <p>Implement OpenID Connect and OAuth2 scopes to enable embedding of external clinical decision support applications (e.g., Growth Charts, Bilirubin calculators).</p>
+        </div>
+        <div class="card emerald">
+          <div class="card-title">🖼️ Web DICOM PACS Viewer</div>
+          <p>Integrate CornerstoneJS web medical image viewer directly into the clinical chart for zero-footprint CT and MRI slice visualization.</p>
+        </div>
+        <div class="card purple">
+          <div class="card-title">🤖 AI Ambient Clinical Scribe</div>
+          <p>Real-time speech-to-text with LLM-assisted SOAP note draft generation and automated ICD-10 diagnostic coding suggestions.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🌐 Multi-Region Database Sharding</div>
+          <p>Evaluate distributed MongoDB horizontal sharding across geographic regions for national hospital network deployments.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 18: Conclusion & Q&A -->
+    <div class="slide">
+      <div style="margin-top: auto; margin-bottom: auto; text-align: center;">
+        <span class="badge" style="margin-bottom: 16px;">Conclusion</span>
+        <h2>Summary of Contributions & Q&A</h2>
+        <p class="subtitle" style="max-width: 800px; margin: 0 auto 36px auto;">
+          Proved that field-level cryptography, deterministic blind indexing, tamper-evident hash chaining, and real-time clinical workflows can be seamlessly unified into an enterprise EHR.
+        </p>
+
+        <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 40px;">
+          <div class="card" style="text-align: left; width: 320px;">
+            <div class="card-title">📂 Monorepo Deliverables</div>
+            <p style="font-size: 0.85rem; color: var(--on-surface-variant);">
+              • 3 Workspaces (@ehr/shared, api, web)<br>
+              • 69 Automated Tests (100% Pass)<br>
+              • Full Architectural & HIPAA Docs
+            </p>
+          </div>
+          <div class="card highlight" style="text-align: left; width: 320px;">
+            <div class="card-title">🛡️ Core Innovations</div>
+            <p style="font-size: 0.85rem; color: var(--on-surface-variant);">
+              • AES-256-GCM + HMAC Blind Index<br>
+              • SHA-256 Hash-Chained Audit Ledger<br>
+              • Real-Time Dispatch FSM & Sockets
+            </p>
+          </div>
+        </div>
+
+        <h3 style="color: var(--accent-cyan); font-size: 1.8rem;">Thank You! Questions & Discussion</h3>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Speaker Notes Drawer -->
+  <div id="notes-drawer">
+    <div class="notes-title">🎙️ Speaker Notes & Academic Defense</div>
+    <div id="notes-content">Notes for slide...</div>
+  </div>
+
+  <!-- Footer Controls -->
+  <footer>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn" id="prev-btn">◀ Previous</button>
+      <button class="btn btn-primary" id="next-btn">Next ▶</button>
+    </div>
+    <div style="display: flex; gap: 12px;">
+      <button class="btn" id="toggle-notes">🎙️ Toggle Speaker Notes [N]</button>
+      <button class="btn" id="fullscreen-btn">⛶ Fullscreen [F]</button>
+    </div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    const notes = [
+      // 1
+      "Good morning, Professor. Today I will walk you through the architecture, cryptographic innovations, and real-time clinical workflows of our Simulated EHR platform.",
+      // 2
+      "In 2025 alone, over 130 million healthcare records were breached. Disk encryption protects stolen hard drives but offers zero protection against memory compromises or SQL/NoSQL injection.",
+      // 3
+      "Our system is organized as a clean-architecture monorepo with 10-stage middleware pipeline handling rate limiting, auth, facility ABAC, and audit chaining.",
+      // 4
+      "Direct identifiers (SSN, legal name, email, phone) are encrypted at the application boundary using AES-256-GCM with unique 12-byte IVs and 16-byte authentication tags.",
+      // 5
+      "To search encrypted data in O(1) time without full table scans, we pair every encrypted field with an HMAC-SHA256 blind index computed with an isolated secret salt.",
+      // 6
+      "HIPAA requires non-repudiable audit logging. Our system cryptographically hash-chains each audit log to the previous entry, making tampering mathematically detectable.",
+      // 7
+      "Our identity pipeline uses Argon2id password hashing, RFC 6238 TOTP MFA, and rotating refresh token families that automatically detect replay attacks and revoke compromised families.",
+      // 8
+      "We implement 9 clinical roles across 37 permissions. Our Break-Glass protocol allows emergency ward overrides with high-priority audit flagging.",
+      // 9
+      "We use Mongoose polymorphic discriminators to model 7 specialized clinical orders and procedures in a single collection, with atomic sequential MRN generation.",
+      // 10
+      "Our Clinical Decision Support (CDS) engine evaluates active prescriptions against patient allergies, drug-drug contraindications, and duplicate therapies in real time.",
+      // 11
+      "The hospital dispatch engine tracks patient and specimen transport using a Finite State Machine, QR code physical verification, and background SLA sweepers.",
+      // 12
+      "Our HL7 FHIR Release 4 read facade translates internal encrypted MongoDB records on the fly into validated FHIR JSON searchset bundles.",
+      // 13
+      "The web app is built with React 19, TypeScript, and Google Material Design 3 tokens, featuring a persistent clinical Patient Banner with high-visibility allergy alerts.",
+      // 14
+      "Our automated test suite contains 69 integration and unit tests running against an in-memory MongoDB replica set with 100% passing rate.",
+      // 15
+      "In our live demonstration scenario, we walk through patient intake, nurse vitals outlier alerts, signed SOAP notes, CDS prescribing alerts, dispatch tracking, and audit verification.",
+      // 16
+      "Compared to legacy systems, our EHR provides field-level encryption, deterministic blind indexing, hash-chained audit trails, and native real-time WebSockets.",
+      // 17
+      "Future directions include SMART-on-FHIR OAuth2 app embedding, web-based DICOM medical imaging rendering, and ambient AI clinical documentation.",
+      // 18
+      "Thank you, Professor. I am now open to your questions and technical defense."
+    ];
+
+    function updateSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+      currentSlide = index;
+
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === currentSlide);
+      });
+
+      // Update progress bar
+      const progressPercent = ((currentSlide + 1) / totalSlides) * 100;
+      document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+      // Update indicator
+      document.getElementById('slide-indicator').textContent = `Slide ${currentSlide + 1} of ${totalSlides}`;
+
+      // Update speaker notes
+      document.getElementById('notes-content').textContent = notes[currentSlide] || "No notes for this slide.";
+    }
+
+    document.getElementById('prev-btn').addEventListener('click', () => updateSlide(currentSlide - 1));
+    document.getElementById('next-btn').addEventListener('click', () => updateSlide(currentSlide + 1));
+
+    document.getElementById('toggle-notes').addEventListener('click', () => {
+      document.getElementById('notes-drawer').classList.toggle('open');
+    });
+
+    document.getElementById('fullscreen-btn').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        updateSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        updateSlide(currentSlide - 1);
+      } else if (e.key === 'n' || e.key === 'N') {
+        document.getElementById('notes-drawer').classList.toggle('open');
+      } else if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // Initialize
+    updateSlide(0);
+  </script>
+</body>
+</html>
