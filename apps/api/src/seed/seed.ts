@@ -163,9 +163,11 @@ const REASONS_FOR_VISIT = [
 
 // ─── Main Seed Function ──────────────────────────────────────────────────────
 
-async function seed() {
-  console.log('🌱 Connecting to MongoDB...');
-  await mongoose.connect(env.MONGO_URI);
+export async function seedDatabase(disconnect = false) {
+  console.log('🌱 Ensuring MongoDB connection...');
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(env.MONGO_URI);
+  }
   console.log('✅ Connected to MongoDB');
 
   console.log('🗑️  Clearing existing data...');
@@ -907,10 +909,15 @@ async function seed() {
   console.log('   ▶  cd apps/api  && npm run dev');
   console.log('   ▶  cd apps/web  && npm run dev\n');
 
-  await mongoose.disconnect();
+  if (disconnect) {
+    await mongoose.disconnect();
+  }
 }
 
-seed().catch((err) => {
-  console.error('❌ Seed failed:', err);
-  process.exit(1);
-});
+// Execute directly if run via CLI
+if (process.argv[1]?.includes('seed.ts') || process.argv[1]?.includes('seed.js')) {
+  seedDatabase(true).catch((err) => {
+    console.error('❌ Seed failed:', err);
+    process.exit(1);
+  });
+}

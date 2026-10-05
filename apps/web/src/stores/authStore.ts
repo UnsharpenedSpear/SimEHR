@@ -23,12 +23,13 @@ export interface AuthUser {
 
 interface AuthState {
   user: AuthUser | null;
+  token: string | null;
   isAuthenticated: boolean;
   isMfaRequired: boolean;
   tempToken: string | null;
   sessionTimeoutWarning: boolean;
 
-  setAuth: (user: AuthUser) => void;
+  setAuth: (user: AuthUser, token?: string) => void;
   setMfaChallenge: (tempToken: string) => void;
   setActiveFacility: (facilityId: string) => void;
   setSessionTimeoutWarning: (warning: boolean) => void;
@@ -41,14 +42,16 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
+      token: null,
       isAuthenticated: false,
       isMfaRequired: false,
       tempToken: null,
       sessionTimeoutWarning: false,
 
-      setAuth: (user) =>
+      setAuth: (user, token) =>
         set({
           user,
+          token: token || get().token,
           isAuthenticated: true,
           isMfaRequired: false,
           tempToken: null,
@@ -72,6 +75,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () =>
         set({
           user: null,
+          token: null,
           isAuthenticated: false,
           isMfaRequired: false,
           tempToken: null,
@@ -104,7 +108,7 @@ export const useAuthStore = create<AuthState>()(
           removeItem: (key: string) => { delete memoryStorage[key]; },
         };
       }),
-      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      partialize: (state) => ({ user: state.user, token: state.token, isAuthenticated: state.isAuthenticated }),
     }
   )
 );

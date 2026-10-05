@@ -9,11 +9,14 @@ export const apiClient = axios.create({
   },
 });
 
-// Request Interceptor: inject correlation ID and active facility header
+// Request Interceptor: inject Authorization Bearer token, correlation ID and active facility header
 apiClient.interceptors.request.use((config) => {
-  const activeFacilityId = useAuthStore.getState().user?.activeFacilityId;
-  if (activeFacilityId) {
-    config.headers['X-Facility-Id'] = activeFacilityId;
+  const { user, token } = useAuthStore.getState();
+  if (token && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  if (user?.activeFacilityId) {
+    config.headers['X-Facility-Id'] = user.activeFacilityId;
   }
   return config;
 });

@@ -12,14 +12,14 @@ import {
   Chip,
   CircularProgress,
 } from '@mui/material';
-import { Shield, KeyRound, ArrowRight, Lock } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore.js';
 import { apiClient } from '../../services/apiClient.js';
 
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('physician@ehr.hospital.org');
-  const [password, setPassword] = useState('Password123!@#');
+  const [email, setEmail] = useState('dr.chen@ehrtest.local');
+  const [password, setPassword] = useState('Password@123!');
   const [mfaCode, setMfaCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,32 +38,42 @@ export const LoginPage: React.FC = () => {
           tempToken,
           code: mfaCode,
         });
-        setAuth(res.data.data.user);
+        setAuth(res.data.data.user, res.data.data.accessToken);
         navigate('/');
       } else {
         const res = await apiClient.post('/auth/login', { email, password });
         if (res.data.data.mfaRequired) {
           setMfaChallenge(res.data.data.tempToken);
         } else {
-          setAuth(res.data.data.user);
+          setAuth(res.data.data.user, res.data.data.accessToken);
           navigate('/');
         }
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Authentication failed. Check credentials or lockout state.');
+      const detail = err.response?.data?.detail;
+      setError(detail || 'Authentication failed. Please verify your staff credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   const demoAccounts = [
-    { role: 'Physician', email: 'physician@ehr.hospital.org' },
-    { role: 'Nurse', email: 'nurse@ehr.hospital.org' },
-    { role: 'Receptionist', email: 'receptionist@ehr.hospital.org' },
-    { role: 'Lab Tech', email: 'labtech@ehr.hospital.org' },
-    { role: 'Pharmacist', email: 'pharmacist@ehr.hospital.org' },
-    { role: 'Super Admin', email: 'admin@ehr.hospital.org' },
+    { role: 'Physician', email: 'dr.chen@ehrtest.local', name: 'Dr. Marcus Chen' },
+    { role: 'Nurse', email: 'nurse.williams@ehrtest.local', name: 'Sandra Williams, RN' },
+    { role: 'Receptionist', email: 'receptionist@ehrtest.local', name: 'Carlos Reyes' },
+    { role: 'Lab Tech', email: 'labtech@ehrtest.local', name: 'Kevin Okonkwo' },
+    { role: 'Radiologist', email: 'radiologist@ehrtest.local', name: 'Dr. Helena Kowalski' },
+    { role: 'Pharmacist', email: 'pharmacist@ehrtest.local', name: 'Omar Farouq, PharmD' },
+    { role: 'Billing', email: 'billing@ehrtest.local', name: 'Rachel Nguyen' },
+    { role: 'Auditor', email: 'auditor@ehrtest.local', name: 'George Thornton' },
+    { role: 'Super Admin', email: 'admin@ehrtest.local', name: 'Alice Administrator' },
   ];
+
+  const selectDemoAccount = (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword('Password@123!');
+    setError(null);
+  };
 
   return (
     <Box
@@ -76,7 +86,7 @@ export const LoginPage: React.FC = () => {
         p: 2,
       }}
     >
-      <Card sx={{ maxWidth: 460, width: '100%', p: 2, borderRadius: 4, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+      <Card sx={{ maxWidth: 500, width: '100%', p: 2, borderRadius: 4, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
         <CardContent>
           <Stack spacing={3} alignItems="center">
             {/* Header Brand */}
@@ -98,7 +108,7 @@ export const LoginPage: React.FC = () => {
                 +
               </Box>
               <Typography variant="h5" fontWeight={800}>
-                Simulated<span style={{ color: '#006874' }}>EHR</span>
+                Simulated<span style={{ color: '#0284c7' }}>EHR</span>
               </Typography>
             </Stack>
 
@@ -109,12 +119,12 @@ export const LoginPage: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 {isMfaRequired
                   ? 'Enter the 6-digit TOTP code from your authenticator application'
-                  : 'Authorized personnel only • All access is audited and logged'}
+                  : 'Authorized healthcare personnel only • All actions are audit-logged'}
               </Typography>
             </Box>
 
             {error && (
-              <Alert severity="error" sx={{ width: '100%', borderRadius: 2 }}>
+              <Alert severity="error" icon={<ShieldAlert size={20} />} sx={{ width: '100%', borderRadius: 2 }}>
                 {error}
               </Alert>
             )}
@@ -138,6 +148,7 @@ export const LoginPage: React.FC = () => {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      helperText="Default password: Password@123!"
                     />
                   </>
                 ) : (
@@ -170,22 +181,28 @@ export const LoginPage: React.FC = () => {
             {/* Quick-switch Demo Credentials */}
             {!isMfaRequired && (
               <Box sx={{ width: '100%', pt: 1 }}>
-                <Divider sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    DEMO ROLE PRESETS
+                <Divider sx={{ mb: 1.5 }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                    CLICK TO AUTO-FILL DEMO ACCOUNT
                   </Typography>
                 </Divider>
                 <Stack direction="row" spacing={0.75} flexWrap="wrap" justifyContent="center">
-                  {demoAccounts.map((acc) => (
-                    <Chip
-                      key={acc.role}
-                      label={acc.role}
-                      size="small"
-                      clickable
-                      onClick={() => setEmail(acc.email)}
-                      sx={{ mb: 0.75, fontWeight: 600, fontSize: '0.75rem' }}
-                    />
-                  ))}
+                  {demoAccounts.map((acc) => {
+                    const isSelected = email === acc.email;
+                    return (
+                      <Chip
+                        key={acc.role}
+                        label={acc.role}
+                        size="small"
+                        clickable
+                        variant={isSelected ? 'filled' : 'outlined'}
+                        color={isSelected ? 'primary' : 'default'}
+                        icon={isSelected ? <CheckCircle2 size={14} /> : undefined}
+                        onClick={() => selectDemoAccount(acc.email)}
+                        sx={{ mb: 0.75, fontWeight: 600, fontSize: '0.75rem' }}
+                      />
+                    );
+                  })}
                 </Stack>
               </Box>
             )}

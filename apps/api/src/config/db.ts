@@ -27,14 +27,46 @@ export async function connectDB(): Promise<typeof mongoose> {
   try {
     const conn = await mongoose.connect(uri, {
       maxPoolSize: 20,
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 6000,
       retryWrites: true,
       w: 'majority',
     });
     logger.info({ host: conn.connection.host, name: conn.connection.name }, 'MongoDB connected successfully');
+
+    // Auto-seed if database is empty in development mode
+    if (env.NODE_ENV !== 'production' && env.NODE_ENV !== 'test') {
+      try {
+        const userCount = await conn.connection.db?.collection('users').countDocuments();
+        if (userCount === 0) {
+          logger.info('Empty database detected in development. Auto-seeding initial clinical fixtures...');
+          const { seedDatabase } = await import('../seed/seed.js');
+          await seedDatabase(false);
+        }
+      } catch (seedErr) {
+        logger.warn({ err: seedErr }, 'Auto-seed check encountered an issue');
+      }
+    }
+
     return conn;
   } catch (err) {
+    if (env.NODE_ENV !== 'production' && !replSet) {
+      try {
+        logger.warn('Local MongoDB unreachable. Starting in-memory MongoDB replica set for development...');
+        replSet = await MongoMemoryReplSet.create({
+          replSet: { count: 1, storageEngine: 'wiredTiger' },
+        });
+        uri = replSet.getUri();
+        const conn = await mongoose.connect(uri);
+        logger.info({ uri }, 'Connected to in-memory MongoDB replica set for development');
+        logger.info('Auto-seeding in-memory database with synthetic clinical fixtures...');
+        const { seedDatabase } = await import('../seed/seed.js');
+        await seedDatabase(false);
+        return conn;
+      } catch (fallbackErr) {
+        logger.error({ err: fallbackErr }, 'Failed to start in-memory MongoDB fallback');
+      }
+    }
     logger.error({ err }, 'MongoDB connection error');
     throw err;
   }

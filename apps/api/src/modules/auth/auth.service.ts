@@ -77,7 +77,24 @@ export class AuthService {
     userAgent?: string;
     requestId?: string;
   }) {
-    const user = await UserModel.findOne({ email: params.email.toLowerCase() }).populate('roleIds');
+    const normalizedEmail = params.email.toLowerCase().trim();
+    const emailAliases: Record<string, string> = {
+      'physician@ehr.hospital.org': 'dr.chen@ehrtest.local',
+      'doctor@ehrtest.local': 'dr.chen@ehrtest.local',
+      'physician@ehrtest.local': 'dr.chen@ehrtest.local',
+      'nurse@ehr.hospital.org': 'nurse.williams@ehrtest.local',
+      'nurse@ehrtest.local': 'nurse.williams@ehrtest.local',
+      'receptionist@ehr.hospital.org': 'receptionist@ehrtest.local',
+      'labtech@ehr.hospital.org': 'labtech@ehrtest.local',
+      'pharmacist@ehr.hospital.org': 'pharmacist@ehrtest.local',
+      'radiologist@ehr.hospital.org': 'radiologist@ehrtest.local',
+      'billing@ehr.hospital.org': 'billing@ehrtest.local',
+      'auditor@ehr.hospital.org': 'auditor@ehrtest.local',
+      'admin@ehr.hospital.org': 'admin@ehrtest.local',
+    };
+
+    const targetEmail = emailAliases[normalizedEmail] || normalizedEmail;
+    const user = await UserModel.findOne({ email: targetEmail }).populate('roleIds');
     if (!user) {
       throw new UnauthorizedError('Invalid email or password');
     }
