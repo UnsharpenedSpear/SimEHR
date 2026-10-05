@@ -223,16 +223,16 @@ export async function seedDatabase(disconnect = false) {
   // ── 3. Departments ───────────────────────────────────────────────────────
   console.log('\n🏥 Seeding departments...');
   const deptData = [
-    { name: 'Emergency Department', code: 'ED', type: 'CLINICAL' },
-    { name: 'Internal Medicine', code: 'IM', type: 'CLINICAL' },
-    { name: 'Cardiology', code: 'CARD', type: 'CLINICAL' },
-    { name: 'Laboratory', code: 'LAB', type: 'DIAGNOSTIC' },
-    { name: 'Radiology', code: 'RAD', type: 'DIAGNOSTIC' },
-    { name: 'Pharmacy', code: 'PHARM', type: 'SUPPORT' },
-    { name: 'Orthopedics', code: 'ORTHO', type: 'CLINICAL' },
-    { name: 'Neurology', code: 'NEURO', type: 'CLINICAL' },
-    { name: 'Intensive Care Unit', code: 'ICU', type: 'CLINICAL' },
-    { name: 'Outpatient Clinic', code: 'OPC', type: 'CLINICAL' },
+    { name: 'Emergency Department', code: 'ED', type: 'EMERGENCY' },
+    { name: 'Internal Medicine', code: 'IM', type: 'GENERAL_WARD' },
+    { name: 'Cardiology', code: 'CARD', type: 'GENERAL_WARD' },
+    { name: 'Laboratory', code: 'LAB', type: 'LABORATORY' },
+    { name: 'Radiology', code: 'RAD', type: 'RADIOLOGY' },
+    { name: 'Pharmacy', code: 'PHARM', type: 'PHARMACY' },
+    { name: 'Orthopedics', code: 'ORTHO', type: 'SURGERY_OT' },
+    { name: 'Neurology', code: 'NEURO', type: 'GENERAL_WARD' },
+    { name: 'Intensive Care Unit', code: 'ICU', type: 'ICU' },
+    { name: 'Outpatient Clinic', code: 'OPC', type: 'OUTPATIENT_CLINIC' },
   ];
 
   const departments = await DepartmentModel.insertMany(
@@ -488,7 +488,7 @@ export async function seedDatabase(disconnect = false) {
   // ── 7. Encounters ────────────────────────────────────────────────────────
   console.log('\n🏥 Seeding encounters...');
   const ENCOUNTER_TYPE_VALS = ['OUTPATIENT', 'INPATIENT', 'EMERGENCY', 'TELEHEALTH'];
-  const ENCOUNTER_STATUS_VALS = ['IN_PROGRESS', 'COMPLETED', 'ARRIVED', 'TRIAGED', 'DISCHARGED'];
+  const ENCOUNTER_STATUS_VALS = ['IN_PROGRESS', 'FINISHED', 'ARRIVED', 'TRIAGED', 'PLANNED'];
 
   const encounterBatch: any[] = [];
   for (const patientId of patientIds) {
@@ -507,7 +507,7 @@ export async function seedDatabase(disconnect = false) {
         type,
         status,
         start,
-        end: status !== 'IN_PROGRESS' && status !== 'ARRIVED' && status !== 'TRIAGED'
+        end: status !== 'IN_PROGRESS' && status !== 'ARRIVED' && status !== 'TRIAGED' && status !== 'PLANNED'
           ? new Date(start.getTime() + durationHours * 3600000)
           : undefined,
         reasonForVisit: randChoice(REASONS_FOR_VISIT),
@@ -800,7 +800,7 @@ export async function seedDatabase(disconnect = false) {
 
   // ── 14. Appointments ─────────────────────────────────────────────────────
   console.log('\n📅 Seeding appointments...');
-  const APPT_STATUS_VALS = ['SCHEDULED', 'SCHEDULED', 'ARRIVED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'];
+  const APPT_STATUS_VALS = ['CONFIRMED', 'BOOKED', 'ARRIVED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'];
   const APPT_TYPE_VALS = ['ROUTINE', 'FOLLOW_UP', 'NEW_PATIENT', 'PROCEDURE', 'TELEHEALTH'];
 
   const apptBatch: any[] = [];
